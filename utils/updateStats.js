@@ -3,7 +3,10 @@ module.exports = async (guild) => {
   const members = await guild.members.fetch();
 
   const bots = members.filter(m => m.user.bot).size;
-  const online = members.filter(m => m.presence?.status === "online").size;
+
+  const online = members.filter(
+    m => m.presence && m.presence.status !== "offline"
+  ).size;
 
   const manRole = guild.roles.cache.find(r => r.name === "Man");
   const womanRole = guild.roles.cache.find(r => r.name === "Woman");
@@ -13,23 +16,29 @@ module.exports = async (guild) => {
 
   const total = man + woman;
 
-  guild.channels.cache.forEach(channel => {
+  for (const channel of guild.channels.cache.values()) {
 
-    if(channel.name.startsWith("👥 Total"))
-      channel.setName(`👥 Total: ${total}`);
+    try {
 
-    if(channel.name.startsWith("👨 Man Total"))
-      channel.setName(`👨 Man Total: ${man}`);
+      if (channel.name.startsWith("👥 Total"))
+        await channel.setName(`👥 Total: ${total}`);
 
-    if(channel.name.startsWith("👩 Woman Total"))
-      channel.setName(`👩 Woman Total: ${woman}`);
+      if (channel.name.startsWith("👨 Man Total"))
+        await channel.setName(`👨 Man Total: ${man}`);
 
-    if(channel.name.startsWith("🤖 Bot-Fii Total"))
-      channel.setName(`🤖 Bot-Fii Total: ${bots}`);
+      if (channel.name.startsWith("👩 Woman Total"))
+        await channel.setName(`👩 Woman Total: ${woman}`);
 
-    if(channel.name.startsWith("🟢 Online"))
-      channel.setName(`🟢 Online: ${online}`);
+      if (channel.name.startsWith("🤖 Bot-Fii Total"))
+        await channel.setName(`🤖 Bot-Fii Total: ${bots}`);
 
-  });
+      if (channel.name.startsWith("🟢 Online"))
+        await channel.setName(`🟢 Online: ${online}`);
+
+    } catch (err) {
+      console.log("Stats update error:", err.message);
+    }
+
+  }
 
 };
